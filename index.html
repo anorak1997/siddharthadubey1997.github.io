@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siddhartha Dubey — Robotics Engineer</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050709;--bg2:#0c1017;--bg3:#141922;--card:rgba(14,19,28,.6);
+  --text:#d4d4d8;--muted:#8b8b95;--dim:#52525b;--faint:#27272a;
+  --green:#76b900;--cyan:#06b6d4;--blue:#3b82f6;--violet:#8b5cf6;--rose:#f43f5e;--amber:#eab308;
+  --gG:rgba(118,185,0,.1);--gC:rgba(6,182,212,.07);
+  --brd:rgba(255,255,255,.05);--brdH:rgba(255,255,255,.1);
+  --sans:'Outfit',system-ui,sans-serif;
+  --mono:'Space Mono',monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.6}
+::selection{background:var(--green);color:var(--bg)}
+a{color:inherit;text-decoration:none}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--green);border-radius:2px}
+
+#progress{position:fixed;top:0;left:0;height:2px;background:var(--green);z-index:9999;width:0;transition:width .08s}
+
+/* Boot loader */
+#loader{position:fixed;inset:0;z-index:20000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s,visibility .6s}
+#loader.done{opacity:0;visibility:hidden;pointer-events:none}
+.boot-text{font-family:var(--mono);font-size:.72rem;color:var(--green);text-align:left;width:420px;max-width:90vw;line-height:2.1}
+.boot-text .line{opacity:0;animation:bootLine .3s ease forwards}
+@keyframes bootLine{to{opacity:1}}
+.boot-bar{width:420px;max-width:90vw;height:3px;background:var(--faint);border-radius:2px;margin-top:1.5rem;overflow:hidden}
+.boot-fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:2px;animation:bootFill 2.2s ease forwards .4s}
+@keyframes bootFill{to{width:100%}}
+
+/* Subtle grain */
+body::after{content:'';position:fixed;inset:0;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:9990}
+
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* Custom cursor */
+.cur{position:fixed;width:20px;height:20px;border:1.5px solid var(--green);border-radius:50%;pointer-events:none;z-index:10000;transition:transform .15s,opacity .15s;mix-blend-mode:difference;transform:translate(-50%,-50%)}
+.cur-d{position:fixed;width:4px;height:4px;background:var(--green);border-radius:50%;pointer-events:none;z-index:10001;transform:translate(-50%,-50%)}
+.cur.hov{transform:translate(-50%,-50%) scale(2.5);border-color:var(--cyan);opacity:.5}
+
+/* HUD corners */
+.hud{position:fixed;z-index:100;pointer-events:none;opacity:.2}
+.hud::before,.hud::after{content:'';position:absolute;background:var(--green)}
+.h-tl{top:10px;left:10px}.h-tl::before{width:20px;height:1px}.h-tl::after{width:1px;height:20px}
+.h-tr{top:10px;right:10px}.h-tr::before{width:20px;height:1px;right:0}.h-tr::after{width:1px;height:20px;right:0}
+.h-bl{bottom:10px;left:10px}.h-bl::before{width:20px;height:1px;bottom:0}.h-bl::after{width:1px;height:20px;bottom:0}
+.h-br{bottom:10px;right:10px}.h-br::before{width:20px;height:1px;right:0;bottom:0}.h-br::after{width:1px;height:20px;right:0;bottom:0}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:1rem 2rem;background:rgba(5,7,9,.78);backdrop-filter:blur(20px);border-bottom:1px solid var(--brd);transform:translateY(-100%);animation:navIn .5s var(--ease) 3s forwards}
+@keyframes navIn{to{transform:translateY(0)}}
+nav .inner{max-width:1120px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:var(--mono);font-size:.82rem;cursor:pointer;color:var(--green);display:flex;align-items:center;gap:.5rem}
+.logo em{color:var(--green);font-style:italic}
+.nav-links{display:flex;gap:.15rem;list-style:none}
+.nav-links a{font-size:.8rem;font-weight:500;color:var(--dim);padding:.45rem .8rem;border-radius:6px;transition:all .25s;letter-spacing:.01em}
+.nav-links a:hover,.nav-links a.on{color:var(--green);background:rgba(118,185,0,.06)}
+.menu-btn{display:none;background:none;border:1px solid var(--brd);color:var(--muted);font-size:.75rem;padding:.4rem .7rem;border-radius:6px;cursor:pointer;font-family:var(--mono)}
+
+.container{max-width:1120px;margin:0 auto;padding:0 2rem;position:relative;z-index:2}
+
+/* Page routing */
+.page{display:none;opacity:0;min-height:100vh;position:relative;z-index:2}
+.page.active{display:block;animation:pgIn .45s var(--ease) forwards}
+@keyframes pgIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---- Reveal ---- */
+.rv{opacity:0;transform:translateY(20px);transition:all .55s var(--ease)}.rv.vis{opacity:1;transform:translateY(0)}
+
+/* ======== HOME ======== */
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 0 60px}
+.hero-grid{display:grid;grid-template-columns:1fr 340px;gap:4rem;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.7rem;color:var(--green);padding:.35rem .85rem;border:1px solid rgba(118,185,0,.2);border-radius:100px;background:rgba(118,185,0,.04);margin-bottom:1.5rem}
+.pill-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:dot 2s ease infinite}
+@keyframes dot{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.hero h1{font-size:clamp(3rem,6.5vw,5rem);font-weight:800;line-height:1.05;letter-spacing:-.04em;margin-bottom:.75rem}
+.hero h1 em{font-style:normal;color:var(--green)}
+.grad{background:linear-gradient(135deg,var(--green) 0%,var(--cyan) 50%,var(--blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.15rem;font-weight:300;color:var(--muted);margin-bottom:1.5rem;letter-spacing:-.01em}
+.hero-copy{font-size:.95rem;color:var(--dim);max-width:520px;line-height:1.85;margin-bottom:2rem}
+.hero-copy strong{color:var(--muted);font-weight:500}
+
+/* More natural terminal */
+.term-box{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:1rem 1.2rem;font-family:var(--mono);font-size:.73rem;margin-bottom:2rem;max-width:520px}
+.term-bar{display:flex;gap:5px;margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid var(--brd)}
+.td{width:7px;height:7px;border-radius:50%}
+.tl{line-height:1.9;color:var(--dim)}
+.tl .g{color:var(--green)}.tl .c{color:var(--cyan)}.tl .y{color:var(--amber)}.tl .m{color:var(--muted)}
+
+.btns{display:flex;gap:.7rem;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.8rem 1.8rem;font-family:var(--sans);font-size:.88rem;font-weight:600;border-radius:8px;transition:all .3s;border:none;cursor:pointer}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.btn-p{background:var(--green);color:var(--bg)}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(118,185,0,.25)}
+.btn-g{background:transparent;color:var(--text);border:1px solid var(--brdH)}
+.btn-g:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.stats{display:flex;gap:3rem;margin-top:3rem;padding-top:2rem;border-top:1px solid var(--brd)}
+.stat h3{font-size:2rem;color:var(--green)}
+.stat p{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-top:.15rem;font-weight:500}
+
+/* Radar - cleaner */
+.radar-wrap{position:relative;width:100%;aspect-ratio:1;opacity:.4}
+.rr{position:absolute;border:1px solid var(--green);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%)}
+.rr:nth-child(1){width:100%;height:100%}.rr:nth-child(2){width:66%;height:66%}.rr:nth-child(3){width:33%;height:33%}
+.rsweep{position:absolute;top:50%;left:50%;width:50%;height:1.5px;background:linear-gradient(90deg,var(--green),transparent);transform-origin:left center;animation:sw 5s linear infinite}
+@keyframes sw{to{transform:rotate(360deg)}}
+.rdot{position:absolute;width:4px;height:4px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);animation:rb 4s ease infinite}
+@keyframes rb{0%,100%{opacity:0}12%,30%{opacity:1}55%{opacity:0}}
+
+/* Ticker */
+.ticker{overflow:hidden;border-top:1px solid var(--brd);border-bottom:1px solid var(--brd);padding:.75rem 0}
+.tk{display:flex;gap:2.5rem;animation:tkr 40s linear infinite;width:max-content}
+.tk span{font-family:var(--mono);font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+@keyframes tkr{to{transform:translateX(-50%)}}
+
+/* ======== SECTION STYLING ======== */
+section{padding:6rem 0}
+.stag{font-family:var(--mono);font-size:.68rem;color:var(--green);letter-spacing:.12em;margin-bottom:.6rem;text-transform:uppercase}
+.stitle{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;letter-spacing:-.02em;line-height:1.15;margin-bottom:1rem}
+.stitle em{font-style:normal;color:var(--cyan)}
+.sdesc{font-size:.95rem;color:var(--dim);max-width:550px;line-height:1.8;margin-bottom:3rem}
+
+/* ======== ABOUT ======== */
+.about-two{display:grid;grid-template-columns:1fr 1fr;gap:3.5rem;margin-bottom:4rem}
+.about-prose{font-size:.93rem;color:var(--muted);line-height:1.9}
+.about-prose p{margin-bottom:1.2rem}
+.about-prose strong{color:var(--text);font-weight:500}
+.about-aside{display:flex;flex-direction:column;gap:1rem}
+.aside-card{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:1.25rem;backdrop-filter:blur(8px);transition:all .3s}
+.aside-card:hover{border-color:var(--brdH)}
+.aside-card h4{font-size:.82rem;font-weight:600;margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem}
+.aside-card h4 .dot{width:6px;height:6px;border-radius:50%}
+.aside-card p{font-size:.78rem;color:var(--dim);line-height:1.6}
+
+/* Skill areas */
+.areas{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:4rem}
+.area{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:1.5rem;transition:all .4s var(--ease);backdrop-filter:blur(8px)}
+.area:hover{transform:translateY(-4px);border-color:var(--brdH);box-shadow:0 16px 48px rgba(0,0,0,.3)}
+.area-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:.95rem}
+.area h3{font-size:.9rem;font-weight:600;margin-bottom:.35rem}
+.area p{font-size:.78rem;color:var(--dim);line-height:1.6}
+
+/* Numbers */
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.num-card{text-align:center;padding:1.75rem 1rem;background:var(--card);border:1px solid var(--brd);border-radius:10px;backdrop-filter:blur(8px)}
+.num-card h2{font-size:2.2rem;line-height:1;margin-bottom:.3rem}
+.num-card p{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+
+/* ======== EXPERIENCE ======== */
+.tl-wrap{position:relative;padding-left:2rem}
+.tl-wrap::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1.5px;background:linear-gradient(to bottom,var(--green),var(--cyan),var(--violet),transparent)}
+.tl-item{position:relative;padding-bottom:2.5rem}
+.tl-item::before{content:'';position:absolute;left:-2rem;top:7px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--green);transform:translateX(-3.75px)}
+.tl-item:first-child::before{background:var(--green);box-shadow:0 0 10px rgba(118,185,0,.4)}
+.tl-top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.5rem;margin-bottom:.25rem}
+.tl-top h3{font-size:1.05rem;font-weight:600}
+.tl-top .date{font-family:var(--mono);font-size:.7rem;color:var(--dim)}
+.tl-role{font-size:.85rem;color:var(--green);font-weight:500;margin-bottom:.6rem}
+.tl-pts{list-style:none;display:flex;flex-direction:column;gap:.3rem}
+.tl-pts li{font-size:.83rem;color:var(--dim);line-height:1.65;padding-left:1.1rem;position:relative}
+.tl-pts li::before{content:'–';position:absolute;left:0;color:var(--dim)}
+.badges{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.7rem}
+.badge{font-family:var(--mono);font-size:.65rem;padding:.2rem .55rem;border-radius:3px;color:var(--cyan);background:rgba(6,182,212,.05);border:1px solid rgba(6,182,212,.12)}
+
+/* ======== SKILLS ======== */
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+.sk-box{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:1.4rem;backdrop-filter:blur(8px);transition:border-color .3s}
+.sk-box:hover{border-color:var(--brdH)}
+.sk-hd{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem}
+.sk-tag{font-family:var(--mono);font-size:.65rem;color:var(--green);padding:.25rem .5rem;border:1px solid rgba(118,185,0,.18);border-radius:3px;background:rgba(118,185,0,.04)}
+.sk-box h3{font-size:.88rem;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.chip{padding:.28rem .6rem;font-size:.73rem;font-family:var(--mono);color:var(--muted);background:rgba(255,255,255,.02);border:1px solid var(--brd);border-radius:5px;transition:all .25s;cursor:default}
+.chip:hover{color:var(--green);border-color:rgba(118,185,0,.25);background:rgba(118,185,0,.04)}
+.chip.h{border-color:rgba(118,185,0,.18);color:var(--green);background:rgba(118,185,0,.04)}
+
+/* Bars */
+.bars{margin-top:2.5rem}
+.bars h3{font-size:1.3rem;margin-bottom:1.5rem;font-weight:700}
+.bar-item{margin-bottom:1rem}
+.bar-top{display:flex;justify-content:space-between;margin-bottom:.35rem}
+.bar-top span{font-size:.82rem;font-weight:500}
+.bar-top .pct{font-family:var(--mono);font-size:.72rem;color:var(--green)}
+.bar-track{height:5px;background:var(--faint);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 1.2s var(--ease)}
+
+/* ======== PROJECTS ======== */
+.proj-stack{display:flex;flex-direction:column;gap:1.5rem}
+.proj{display:grid;grid-template-columns:240px 1fr;background:var(--card);border:1px solid var(--brd);border-radius:12px;overflow:hidden;backdrop-filter:blur(8px);transition:all .4s var(--ease)}
+.proj:hover{transform:translateY(-3px);border-color:var(--brdH);box-shadow:0 16px 48px rgba(0,0,0,.3)}
+.proj-side{display:flex;align-items:center;justify-content:center;position:relative}
+.proj-n{font-size:4.5rem;font-weight:400;color:rgba(255,255,255,.03)}
+.proj-body{padding:1.75rem}
+.proj-cat{font-family:var(--mono);font-size:.65rem;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem}
+.proj-body h3{font-size:1.1rem;font-weight:600;margin-bottom:.1rem}
+.proj-body h3 span{font-weight:300;color:var(--cyan);font-style:italic}
+.proj-body p{font-size:.85rem;color:var(--dim);line-height:1.7;margin-bottom:1rem;max-width:520px}
+.proj-nums{display:flex;gap:1.5rem;margin-bottom:.85rem;flex-wrap:wrap}
+.pn h4{font-size:1.2rem;font-weight:700;color:var(--green);line-height:1}
+.pn p{font-family:var(--mono);font-size:.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:.1rem}
+.ptags{display:flex;flex-wrap:wrap;gap:.25rem}
+.ptags span{padding:.2rem .5rem;font-family:var(--mono);font-size:.65rem;border-radius:3px}
+.tc{color:var(--green);background:rgba(118,185,0,.05);border:1px solid rgba(118,185,0,.1)}
+.tp{color:var(--amber);background:rgba(234,179,8,.05);border:1px solid rgba(234,179,8,.1)}
+.tb{color:var(--blue);background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.1)}
+.tv{color:var(--violet);background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.1)}
+.tr{color:var(--rose);background:rgba(244,63,94,.05);border:1px solid rgba(244,63,94,.1)}
+.td2{color:var(--cyan);background:rgba(6,182,212,.05);border:1px solid rgba(6,182,212,.1)}
+
+/* ======== CONTACT ======== */
+.contact-split{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+.contact-left h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;line-height:1.15;margin-bottom:.75rem;letter-spacing:-.02em}
+.contact-left h2 em{font-style:normal;color:var(--green)}
+.contact-left>p{font-size:.93rem;color:var(--dim);line-height:1.8;margin-bottom:2rem;max-width:380px}
+.clinks{display:flex;flex-direction:column;gap:.6rem}
+.clink{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.1rem;background:var(--card);border:1px solid var(--brd);border-radius:8px;transition:all .3s;backdrop-filter:blur(8px)}
+.clink:hover{border-color:var(--green);transform:translateX(4px)}
+.clink svg{width:16px;height:16px;stroke:var(--green);fill:none;stroke-width:2;flex-shrink:0}
+.clink .clabel{font-family:var(--mono);font-size:.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.05rem}
+.clink .cval{font-size:.85rem;font-weight:500}
+.contact-form{display:flex;flex-direction:column;gap:.85rem}
+.fg{display:flex;flex-direction:column;gap:.3rem}
+.fg label{font-size:.75rem;color:var(--dim);font-weight:500;letter-spacing:.02em}
+.fg input,.fg textarea{background:var(--bg2);border:1px solid var(--brd);border-radius:7px;padding:.8rem .9rem;font-family:var(--sans);font-size:.88rem;color:var(--text);outline:none;transition:border-color .25s;resize:vertical}
+.fg input:focus,.fg textarea:focus{border-color:var(--green)}
+.fg textarea{min-height:110px}
+.send{display:inline-flex;align-items:center;gap:.45rem;padding:.85rem 2rem;background:var(--green);color:var(--bg);font-family:var(--sans);font-size:.88rem;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:all .3s;align-self:flex-start}
+.send:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(118,185,0,.25)}
+
+/* Creds */
+.creds{margin-top:3rem}
+.cred{display:flex;align-items:center;gap:.8rem;padding:.75rem 1rem;background:var(--card);border:1px solid var(--brd);border-radius:8px;margin-bottom:.5rem;backdrop-filter:blur(8px)}
+.cred-badge{font-family:var(--mono);font-size:.58rem;padding:.2rem .45rem;border-radius:3px;font-weight:700;white-space:nowrap}
+.b-nv{background:rgba(118,185,0,.08);color:var(--green);border:1px solid rgba(118,185,0,.12)}
+.b-co{background:rgba(59,130,246,.08);color:var(--blue);border:1px solid rgba(59,130,246,.12)}
+.cred h4{font-size:.82rem;font-weight:500}
+.edu-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem}
+.edu-card{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:1.4rem;backdrop-filter:blur(8px)}
+.edu-yr{font-family:var(--mono);font-size:.68rem;color:var(--green);margin-bottom:.4rem}
+.edu-card h3{font-size:.95rem;font-weight:600;margin-bottom:.15rem}
+.edu-card .school{font-size:.83rem;color:var(--muted);margin-bottom:.3rem}
+.edu-card .gpa{font-family:var(--mono);font-size:.7rem;color:var(--dim);padding:.15rem .45rem;border:1px solid var(--brd);border-radius:3px;display:inline-block}
+
+footer{padding:1.5rem 0;border-top:1px solid var(--brd);text-align:center;position:relative;z-index:2}
+footer p{font-size:.72rem;color:var(--dim)}
+
+@media(max-width:900px){
+  .hero-grid,.about-two,.contact-split{grid-template-columns:1fr}
+  .radar-wrap{display:none}
+  .areas{grid-template-columns:1fr 1fr}
+  .nums{grid-template-columns:1fr 1fr}
+  .sk-grid{grid-template-columns:1fr}
+  .proj{grid-template-columns:1fr}.proj-side{height:100px}
+  .edu-row{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .nav-links{display:none}.menu-btn{display:block}
+  .container{padding:0 1.2rem}
+  .areas{grid-template-columns:1fr}
+  .stats{gap:1.5rem;flex-wrap:wrap}
+  .cur,.cur-d,.hud{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<canvas id="bg"></canvas>
+
+<!-- Custom cursor -->
+<div class="cur" id="cur"></div>
+<div class="cur-d" id="curD"></div>
+
+<!-- HUD corners -->
+<div class="hud h-tl"></div><div class="hud h-tr"></div><div class="hud h-bl"></div><div class="hud h-br"></div>
+
+<!-- Boot Loader -->
+<div id="loader">
+  <div class="boot-text" id="bootText"></div>
+  <div class="boot-bar"><div class="boot-fill"></div></div>
+</div>
+
+<nav>
+<div class="inner">
+  <div class="logo" onclick="go('home')"><span class="pill-dot" style="width:7px;height:7px;box-shadow:0 0 8px var(--green)"></span> siddhartha.sys</div>
+  <ul class="nav-links">
+    <li><a href="#" data-p="home" class="on">Home</a></li>
+    <li><a href="#" data-p="about">About</a></li>
+    <li><a href="#" data-p="work">Work</a></li>
+    <li><a href="#" data-p="skills">Skills</a></li>
+    <li><a href="#" data-p="projects">Projects</a></li>
+    <li><a href="#" data-p="contact">Contact</a></li>
+  </ul>
+  <button class="menu-btn" onclick="toggleMenu()">menu</button>
+</div>
+</nav>
+
+<!-- ============ HOME ============ -->
+<div class="page active" id="page-home">
+<section class="hero">
+<div class="container">
+<div class="hero-grid">
+<div>
+  <div class="pill"><span class="pill-dot"></span> system::active <span style="animation:blink 1s step-end infinite">_</span></div>
+  <h1><span class="grad">Siddhartha</span><br>Dubey<span style="color:var(--green)">.</span></h1>
+  <p class="hero-sub">I make robots see, think, and move.</p>
+  <p class="hero-copy">Robotics engineer with 3+ years building <strong>autonomous navigation</strong>, <strong>perception systems</strong>, and <strong>deep learning inference pipelines</strong> — all running on embedded hardware in real warehouses. Not simulations. Real robots, real environments, real deadlines.</p>
+
+  <div class="term-box">
+    <div class="term-bar"><span class="td" style="background:#ff5f57"></span><span class="td" style="background:#febc2e"></span><span class="td" style="background:#28c840"></span></div>
+    <div class="tl"><span class="g">~</span> things i work with daily:</div>
+    <div class="tl"><span class="m">  languages</span>  <span class="y">C++</span> · <span class="y">Python</span> · <span class="y">CUDA</span> · Go</div>
+    <div class="tl"><span class="m">  inference</span>  <span class="y">TensorRT</span> · <span class="y">YOLO</span> · DeepStream</div>
+    <div class="tl"><span class="m">  autonomy</span>  ROS2 · SLAM · Sensor Fusion · Nav2</div>
+    <div class="tl"><span class="m">  platform</span>  Embedded Linux · Docker · Jetson</div>
+    <div class="tl"><span class="g">~</span> currently <span class="c">open to opportunities</span> in AV/robotics/VR</div>
+  </div>
+
+  <div class="btns">
+    <a href="#" onclick="go('contact')" class="btn btn-p"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Initialize contact</a>
+    <a href="https://www.linkedin.com/in/siddharthadubey1997/" target="_blank" class="btn btn-g"><svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><h3>3+</h3><p>Years in robotics</p></div>
+    <div class="stat"><h3>4</h3><p>Companies</p></div>
+    <div class="stat"><h3>30+</h3><p>FPS real-time DL</p></div>
+  </div>
+</div>
+<div>
+  <div class="radar-wrap">
+    <div class="rr"></div><div class="rr"></div><div class="rr"></div>
+    <div class="rsweep"></div>
+    <div class="rdot" style="top:20%;left:55%"></div>
+    <div class="rdot" style="top:40%;left:25%;animation-delay:.9s"></div>
+    <div class="rdot" style="top:65%;left:70%;animation-delay:1.6s"></div>
+    <div class="rdot" style="top:50%;left:40%;animation-delay:2.3s"></div>
+  </div>
+</div>
+</div>
+</div>
+</section>
+<div class="ticker"><div class="tk"><span>C++</span><span>CUDA</span><span>TensorRT</span><span>YOLO</span><span>ROS2</span><span>SLAM</span><span>Sensor Fusion</span><span>LiDAR</span><span>Computer Vision</span><span>Embedded Linux</span><span>Motion Planning</span><span>PCL</span><span>Visual Odometry</span><span>ISO 26262</span><span>LLMs</span><span>3D Perception</span><span>C++</span><span>CUDA</span><span>TensorRT</span><span>YOLO</span><span>ROS2</span><span>SLAM</span><span>Sensor Fusion</span><span>LiDAR</span><span>Computer Vision</span><span>Embedded Linux</span><span>Motion Planning</span><span>PCL</span><span>Visual Odometry</span><span>ISO 26262</span><span>LLMs</span><span>3D Perception</span></div></div>
+</div>
+
+<!-- ============ ABOUT ============ -->
+<div class="page" id="page-about">
+<section style="padding:8rem 0 5rem">
+<div class="container">
+<div class="stag">About</div>
+<h2 class="stitle">A bit about <em>me</em></h2>
+<div class="sdesc">Not the usual "passionate engineer" spiel — just what I actually do and why it matters.</div>
+
+<div class="about-two rv">
+<div class="about-prose">
+<p>I've spent the last 3+ years in the trenches of <strong>warehouse robotics</strong> — writing the software that lets autonomous mobile robots navigate, avoid obstacles, pick pallets, and dock themselves with millimeter precision.</p>
+<p>My day-to-day sits at the intersection of <strong>computer vision</strong>, <strong>deep learning</strong>, and <strong>real-time embedded systems</strong>. I write C++ for perception pipelines, optimize YOLO models through TensorRT for 30+ FPS inference on NVIDIA GPUs, and wire everything together with ROS2.</p>
+<p>The part I enjoy most? Taking a robot from "kind of works on a good day" to <strong>"runs 12 hours straight without intervention."</strong> That means obsessing over sensor calibration, tuning SLAM parameters, writing proper state machines, and debugging at 2am when the LiDAR decides to misbehave.</p>
+<p>Right now I'm looking to move into <strong>autonomous vehicles and self-driving platforms</strong>. The problems are harder, the stakes are higher, and that's exactly what excites me.</p>
+</div>
+<div class="about-aside">
+  <div class="aside-card rv"><h4><span class="dot" style="background:var(--green)"></span> Currently</h4><p>Building perception + navigation for autonomous pallet-picking robots at V3 Smart Technologies</p></div>
+  <div class="aside-card rv"><h4><span class="dot" style="background:var(--cyan)"></span> Looking for</h4><p>Roles in autonomous driving, ADAS, perception engineering, or robotics at companies pushing the boundary</p></div>
+  <div class="aside-card rv"><h4><span class="dot" style="background:var(--amber)"></span> Based in</h4><p>India — open to relocation for the right opportunity</p></div>
+  <div class="aside-card rv"><h4><span class="dot" style="background:var(--violet)"></span> Education</h4><p>M.Tech in Robotics & Automation (UPES) · B.Tech in Mechanical Engineering</p></div>
+</div>
+</div>
+
+<div class="stag" style="margin-top:3rem">What I work on</div>
+<h3 style="font-size:1.5rem;font-weight:400;margin-bottom:1.5rem">Six things I'm good at</h3>
+<div class="areas">
+  <div class="area rv"><div class="area-icon" style="background:var(--gG);border:1px solid rgba(118,185,0,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#76b900" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/></svg></div><h3>Navigation & SLAM</h3><p>Building robots that know where they are and where they need to go — from mapping to path execution</p></div>
+  <div class="area rv"><div class="area-icon" style="background:var(--gC);border:1px solid rgba(6,182,212,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><h3>Perception & Vision</h3><p>Object detection, depth estimation, visual odometry — making robots understand what they're looking at</p></div>
+  <div class="area rv"><div class="area-icon" style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><h3>Deep Learning on GPU</h3><p>Deploying YOLO, optimizing with TensorRT, writing CUDA kernels — all on embedded hardware under tight latency budgets</p></div>
+  <div class="area rv"><div class="area-icon" style="background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg></div><h3>Sensor Fusion</h3><p>Combining LiDAR, cameras, IMU, and encoders so the robot's world model is better than any single sensor alone</p></div>
+  <div class="area rv"><div class="area-icon" style="background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><h3>LLMs & AI Planning</h3><p>Experimenting with language models that convert natural language commands into executable robot actions</p></div>
+  <div class="area rv"><div class="area-icon" style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><h3>Fleet Systems</h3><p>Building the software that coordinates multiple robots — task allocation, traffic management, telemetry</p></div>
+</div>
+
+<div class="nums">
+  <div class="num-card rv"><h2 style="color:var(--green)" data-count="3">0</h2><p>Years experience</p></div>
+  <div class="num-card rv"><h2 style="color:var(--cyan)" data-count="4">0</h2><p>Companies</p></div>
+  <div class="num-card rv"><h2 style="color:var(--amber)" data-count="30">0</h2><p>FPS inference</p></div>
+  <div class="num-card rv"><h2 style="color:var(--violet)" data-count="98">0</h2><p>% dock rate</p></div>
+</div>
+</div>
+</section>
+</div>
+
+<!-- ============ WORK ============ -->
+<div class="page" id="page-work">
+<section style="padding:8rem 0 5rem">
+<div class="container">
+<div class="stag">Experience</div>
+<h2 class="stitle">Where I've <em>built things</em></h2>
+<div class="sdesc">Four companies, each one dealing with some variant of "make this robot work reliably in a messy warehouse."</div>
+
+<div class="tl-wrap">
+
+<div class="tl-item rv">
+<div class="tl-top"><h3>V3 Smart Technologies</h3><span class="date">Apr 2025 — Present</span></div>
+<div class="tl-role">Robotics Software Engineer</div>
+<ul class="tl-pts">
+<li>Designed the full autonomy stack for a pallet-picking robot — LiDAR, camera, IMU, and encoder fusion on embedded Linux</li>
+<li>Built perception modules using YOLO + TensorRT, getting 30+ FPS object detection on embedded GPU hardware</li>
+<li>Wrote navigation pipelines in C++ and ROS2 that cut localization drift by 35%</li>
+<li>Camera integration and image processing at sub-20ms latency for real-time obstacle avoidance</li>
+<li>Fleet coordination across 5+ robots — backend services, monitoring dashboards, task scheduling</li>
+<li>Spent 200+ hours validating in live warehouses, iterating until reliability hit 95%+ task completion</li>
+</ul>
+<div class="badges"><span class="badge">30+ FPS</span><span class="badge">35% drift ↓</span><span class="badge">95% task rate</span><span class="badge">5+ fleet</span></div>
+</div>
+
+<div class="tl-item rv">
+<div class="tl-top"><h3>Alphadroid</h3><span class="date">Jun 2024 — Apr 2025</span></div>
+<div class="tl-role">Robotics Software Engineer</div>
+<ul class="tl-pts">
+<li>Owned the AGV navigation software on embedded Linux — rewrote core modules to cut path deviation by 30%</li>
+<li>Built YOLO + TensorRT + CUDA inference pipeline from scratch for collision avoidance at 25+ FPS</li>
+<li>SLAM system achieving sub-5cm accuracy across 10,000+ sq ft warehouse floors</li>
+<li>Added visual odometry that reduced tracking error by 40% over encoder-only approach</li>
+<li>Multi-sensor calibration (LiDAR, Camera, IMU, Encoders) with ISP tuning for sub-2cm positioning</li>
+<li>Dockerized the entire deployment pipeline — went from 2 hour deploys to 15 minutes</li>
+<li>Built an autonomous docking system that hits 98%+ on the first attempt</li>
+</ul>
+<div class="badges"><span class="badge">sub-5cm SLAM</span><span class="badge">98% dock</span><span class="badge">40% tracking ↓</span><span class="badge">2h→15min deploy</span></div>
+</div>
+
+<div class="tl-item rv">
+<div class="tl-top"><h3>PRD Robotech Solutions</h3><span class="date">Oct 2023 — May 2024</span></div>
+<div class="tl-role">Robotics Engineer</div>
+<ul class="tl-pts">
+<li>Optimized SLAM algorithms in C++ — 20% better navigation accuracy, 15% less compute time</li>
+<li>Worked with G2O, Eigen, and PCL for point cloud processing, handling 100K+ points per scan</li>
+<li>Helped build a fleet management system that coordinated 8+ warehouse robots</li>
+<li>Built monitoring interfaces and inter-robot communication protocols</li>
+</ul>
+<div class="badges"><span class="badge">20% accuracy ↑</span><span class="badge">100K+ pts/scan</span><span class="badge">8+ robots</span></div>
+</div>
+
+<div class="tl-item rv">
+<div class="tl-top"><h3>Zeropoint Robotics</h3><span class="date">Jan 2023 — Sep 2023</span></div>
+<div class="tl-role">Robotics Software Engineer</div>
+<ul class="tl-pts">
+<li>Wrote mapping and navigation software for warehouse AMRs in C++ and ROS on embedded Linux</li>
+<li>Path planning that achieved 90%+ on-time delivery for autonomous material transport</li>
+<li>Built an autonomous docking system with sub-1cm alignment precision</li>
+</ul>
+<div class="badges"><span class="badge">90%+ on-time</span><span class="badge">sub-1cm dock</span><span class="badge">15K+ sq ft</span></div>
+</div>
+
+</div>
+</div>
+</section>
+</div>
+
+<!-- ============ SKILLS ============ -->
+<div class="page" id="page-skills">
+<section style="padding:8rem 0 5rem">
+<div class="container">
+<div class="stag">Skills</div>
+<h2 class="stitle">What's in <em>the toolkit</em></h2>
+<div class="sdesc">Organized by what I actually use — not a keyword dump.</div>
+
+<div class="sk-grid">
+  <div class="sk-box rv"><div class="sk-hd"><span class="sk-tag">lang</span><h3>Languages</h3></div><div class="chips"><span class="chip h">C++</span><span class="chip h">Python</span><span class="chip h">C</span><span class="chip">Golang</span><span class="chip">JavaScript</span><span class="chip">Bash</span></div></div>
+  <div class="sk-box rv"><div class="sk-hd"><span class="sk-tag">gpu</span><h3>Deep Learning & GPU</h3></div><div class="chips"><span class="chip h">CUDA</span><span class="chip h">TensorRT</span><span class="chip h">YOLO</span><span class="chip">LLMs</span><span class="chip">OpenCV</span><span class="chip">DeepStream</span><span class="chip">DL Inference</span></div></div>
+  <div class="sk-box rv"><div class="sk-hd"><span class="sk-tag">auto</span><h3>Autonomy</h3></div><div class="chips"><span class="chip h">ROS2</span><span class="chip h">SLAM</span><span class="chip h">Sensor Fusion</span><span class="chip">Navigation</span><span class="chip">Motion Planning</span><span class="chip">Localization</span><span class="chip">Path Planning</span></div></div>
+  <div class="sk-box rv"><div class="sk-hd"><span class="sk-tag">vis</span><h3>Perception</h3></div><div class="chips"><span class="chip h">3D Perception</span><span class="chip">Object Detection</span><span class="chip">Visual Odometry</span><span class="chip">Camera ISP</span><span class="chip">PCL</span><span class="chip">Depth Estimation</span></div></div>
+  <div class="sk-box rv"><div class="sk-hd"><span class="sk-tag">sys</span><h3>Embedded & Infra</h3></div><div class="chips"><span class="chip h">Embedded Linux</span><span class="chip">QNX</span><span class="chip">RTOS</span><span class="chip">Docker</span><span class="chip">Kubernetes</span><span class="chip">AWS</span></div></div>
+  <div class="sk-box rv"><div class="sk-hd"><span class="sk-tag">ops</span><h3>Tools & Standards</h3></div><div class="chips"><span class="chip">Git</span><span class="chip">CMake</span><span class="chip">Jenkins</span><span class="chip">CI/CD</span><span class="chip">G2O</span><span class="chip">Eigen</span><span class="chip">ISO 26262</span><span class="chip">ASPICE</span></div></div>
+</div>
+
+<div class="bars rv">
+<h3>Where I'm strongest</h3>
+<div class="bar-item"><div class="bar-top"><span>C++ & Embedded Systems</span><span class="pct">95%</span></div><div class="bar-track"><div class="bar-fill" data-w="95%" style="width:0;background:linear-gradient(90deg,var(--green),var(--cyan))"></div></div></div>
+<div class="bar-item"><div class="bar-top"><span>SLAM & Navigation</span><span class="pct">92%</span></div><div class="bar-track"><div class="bar-fill" data-w="92%" style="width:0;background:linear-gradient(90deg,var(--cyan),var(--blue))"></div></div></div>
+<div class="bar-item"><div class="bar-top"><span>Deep Learning / CUDA / TensorRT</span><span class="pct">88%</span></div><div class="bar-track"><div class="bar-fill" data-w="88%" style="width:0;background:linear-gradient(90deg,var(--violet),var(--rose))"></div></div></div>
+<div class="bar-item"><div class="bar-top"><span>Computer Vision & Perception</span><span class="pct">90%</span></div><div class="bar-track"><div class="bar-fill" data-w="90%" style="width:0;background:linear-gradient(90deg,var(--amber),var(--rose))"></div></div></div>
+<div class="bar-item"><div class="bar-top"><span>ROS / ROS2</span><span class="pct">93%</span></div><div class="bar-track"><div class="bar-fill" data-w="93%" style="width:0;background:linear-gradient(90deg,var(--green),#5a9e00)"></div></div></div>
+</div>
+</div>
+</section>
+</div>
+
+<!-- ============ PROJECTS ============ -->
+<div class="page" id="page-projects">
+<section style="padding:8rem 0 5rem">
+<div class="container">
+<div class="stag">Projects</div>
+<h2 class="stitle">Things I've <em>built</em></h2>
+<div class="sdesc">Side projects and deep-dives beyond the day job.</div>
+
+<div class="proj-stack">
+
+<div class="proj rv">
+<div class="proj-side" style="background:linear-gradient(135deg,rgba(118,185,0,.06),rgba(6,182,212,.03))"><div class="proj-n">01</div></div>
+<div class="proj-body">
+<div class="proj-cat">GPU Computing · Real-time Inference</div>
+<h3>GPU-Accelerated Object Detection <span>on Jetson</span></h3>
+<p>Took a YOLO model, optimized it through TensorRT, wrote custom CUDA kernels for preprocessing and NMS, and deployed it on NVIDIA Jetson. Added an ISP-based image enhancement stage that made a real difference in low-light warehouse conditions.</p>
+<div class="proj-nums"><div class="pn"><h4>40+</h4><p>FPS on Jetson</p></div><div class="pn"><h4>60%</h4><p>Latency cut</p></div><div class="pn"><h4>+8%</h4><p>mAP gain</p></div></div>
+<div class="ptags"><span class="tc">CUDA</span><span class="tc">TensorRT</span><span class="tb">C++</span><span class="tp">Python</span><span class="td2">Jetson</span></div>
+</div>
+</div>
+
+<div class="proj rv">
+<div class="proj-side" style="background:linear-gradient(135deg,rgba(244,63,94,.06),rgba(139,92,246,.03))"><div class="proj-n">02</div></div>
+<div class="proj-body">
+<div class="proj-cat">AI/ML · NLP · Robotics</div>
+<h3>LLM-Powered Task Planner <span>for robots</span></h3>
+<p>Built a system where you can tell a robot what to do in plain English (or Hindi) and it figures out the sequence of navigation goals. Uses an LLM to parse intent, breaks it into waypoints, and feeds them to the ROS2 navigation stack. Not perfect yet, but 90%+ of the time it gets it right.</p>
+<div class="proj-nums"><div class="pn"><h4>90%+</h4><p>Intent accuracy</p></div><div class="pn"><h4>Multi</h4><p>Step planning</p></div></div>
+<div class="ptags"><span class="tr">LLM</span><span class="tp">Python</span><span class="tv">ROS2</span><span class="td2">NLP</span></div>
+</div>
+</div>
+
+<div class="proj rv">
+<div class="proj-side" style="background:linear-gradient(135deg,rgba(59,130,246,.06),rgba(6,182,212,.03))"><div class="proj-n">03</div></div>
+<div class="proj-body">
+<div class="proj-cat">SLAM · Deep Learning · 3D Mapping</div>
+<h3>Multi-Sensor SLAM <span>with learned features</span></h3>
+<p>Standard SLAM breaks in feature-poor warehouse corridors. This project adds deep learning-based feature extraction for more robust loop closure detection. Combines LiDAR scans with camera-derived visual descriptors using PCL and Eigen. Cut loop closure errors by 45% in 20,000+ sq ft test environments.</p>
+<div class="proj-nums"><div class="pn"><h4>45%</h4><p>Error reduction</p></div><div class="pn"><h4>20K+</h4><p>Sq ft tested</p></div></div>
+<div class="ptags"><span class="tb">C++</span><span class="tp">Python</span><span class="td2">OpenCV</span><span class="td2">PCL</span><span class="td2">Eigen</span></div>
+</div>
+</div>
+
+</div>
+
+<!-- Creds & Education -->
+<div class="creds rv">
+<div class="stag" style="margin-top:2rem">Certifications</div>
+<div class="cred"><span class="cred-badge b-nv">NVIDIA DLI</span><h4>Fundamentals of Accelerated Computing with CUDA C/C++</h4></div>
+<div class="cred"><span class="cred-badge b-nv">NVIDIA DLI</span><h4>DeepStream for Video Analytics on Jetson</h4></div>
+<div class="cred"><span class="cred-badge b-nv">NVIDIA DLI</span><h4>Fundamentals of Deep Learning</h4></div>
+<div class="cred"><span class="cred-badge b-co">COURSERA</span><h4>Introduction to Self-Driving Cars — University of Toronto</h4></div>
+</div>
+
+<div style="margin-top:2rem" class="rv">
+<div class="stag">Education</div>
+<div class="edu-row">
+  <div class="edu-card"><div class="edu-yr">2021 — 2023</div><h3>M.Tech in Robotics & Automation</h3><div class="school">UPES, Dehradun</div><span class="gpa">CGPA: 7.95</span></div>
+  <div class="edu-card"><div class="edu-yr">2017 — 2020</div><h3>B.Tech in Mechanical Engineering</h3><div class="school">Chandigarh Engineering College</div><span class="gpa">CGPA: 8.0</span></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+
+<!-- ============ CONTACT ============ -->
+<div class="page" id="page-contact">
+<section style="padding:8rem 0 5rem;min-height:100vh;display:flex;align-items:center">
+<div class="container">
+<div class="stag">Establish link</div>
+<div class="contact-split">
+<div class="contact-left">
+  <h2>Let's work on<br>something <em>interesting.</em></h2>
+  <p>I'm open to roles in autonomous driving, perception engineering, and robotics. If you're building something that moves and thinks, I'd love to hear about it.</p>
+  <div class="clinks">
+    <a href="mailto:siddharthadubey.1997@gmail.com" class="clink"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><div><span class="clabel">Email</span><span class="cval">siddharthadubey.1997@gmail.com</span></div></a>
+    <a href="https://www.linkedin.com/in/siddharthadubey1997/" target="_blank" class="clink"><svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg><div><span class="clabel">LinkedIn</span><span class="cval">linkedin.com/in/siddharthadubey1997</span></div></a>
+    <a href="tel:7527850906" class="clink"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg><div><span class="clabel">Phone</span><span class="cval">+91 7527850906 / 8019312703</span></div></a>
+  </div>
+</div>
+<div class="contact-form">
+  <div class="fg"><label>Name</label><input type="text" placeholder="What should I call you?"></div>
+  <div class="fg"><label>Email</label><input type="email" placeholder="your@email.com"></div>
+  <div class="fg"><label>What's this about?</label><input type="text" placeholder="Job opportunity / Collaboration / Just chatting"></div>
+  <div class="fg"><label>Message</label><textarea placeholder="Tell me what you're working on..."></textarea></div>
+  <button class="send" onclick="alert('Hook this up to Formspree.io or Netlify Forms for real submissions!')">Send message →</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+
+<footer><div class="container"><p>&copy; 2025 Siddhartha Dubey</p></div></footer>
+
+<script>
+// Boot sequence
+const bootLines = [
+  '> initializing siddhartha.sys ...',
+  '> loading perception [YOLO, TensorRT, CUDA]',
+  '> calibrating sensors [LiDAR, Camera, IMU]',
+  '> SLAM pipeline ................. [OK]',
+  '> navigation stack .............. [OK]',
+  '> deep_learning inference ....... [OK]',
+  '> fleet_management .............. [OK]',
+  '> all systems nominal. welcome.'
+];
+const bt = document.getElementById('bootText');
+bootLines.forEach((l, i) => {
+  const d = document.createElement('div');
+  d.className = 'line';
+  d.textContent = l;
+  d.style.animationDelay = (i * .28) + 's';
+  bt.appendChild(d);
+});
+setTimeout(() => document.getElementById('loader').classList.add('done'), 3000);
+
+// Routing
+function go(p){
+  document.querySelectorAll('.page').forEach(pg=>{pg.classList.remove('active');pg.style.display='none';pg.style.opacity='0'});
+  const t=document.getElementById('page-'+p);
+  if(t){t.style.display='block';setTimeout(()=>t.classList.add('active'),10)}
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('on'));
+  const l=document.querySelector(`.nav-links a[data-p="${p}"]`);if(l)l.classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(initAnim,100);
+}
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(a.dataset.p)}));
+function toggleMenu(){
+  const l=document.querySelector('.nav-links');
+  const show=l.style.display!=='flex';
+  l.style.display=show?'flex':'none';
+  if(show){l.style.position='absolute';l.style.top='100%';l.style.left='0';l.style.right='0';l.style.background='rgba(5,7,9,.95)';l.style.flexDirection='column';l.style.padding='1rem';l.style.borderBottom='1px solid var(--brd)';l.style.zIndex='300'}
+}
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>{if(window.innerWidth<600)document.querySelector('.nav-links').style.display='none'}));
+
+// Scroll progress
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('progress').style.width=(window.scrollY/h*100)+'%'});
+
+// Reveal
+function initAnim(){
+  const o=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('vis'),i*40);o.unobserve(e.target)}})},{threshold:.1});
+  document.querySelectorAll('.rv:not(.vis)').forEach(el=>o.observe(el));
+  const bo=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.width=e.target.dataset.w;bo.unobserve(e.target)}})},{threshold:.3});
+  document.querySelectorAll('.bar-fill').forEach(el=>bo.observe(el));
+  document.querySelectorAll('[data-count]').forEach(el=>{
+    const co=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){aCount(e.target,parseInt(e.target.dataset.count));co.unobserve(e.target)}})},{threshold:.5});
+    co.observe(el);
+  });
+}
+function aCount(el,t){let c=0;const s=t/35;const i=setInterval(()=>{c+=s;if(c>=t){c=t;clearInterval(i)}el.textContent=Math.floor(c)+(t<10?'':t<50?'+':'%')},25)}
+initAnim();
+
+// Custom cursor
+const cur=document.getElementById('cur'),curD=document.getElementById('curD');
+let mx=0,my=0,cx2=0,cy2=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;curD.style.left=mx+'px';curD.style.top=my+'px'});
+(function ac(){cx2+=(mx-cx2)*.12;cy2+=(my-cy2)*.12;cur.style.left=cx2+'px';cur.style.top=cy2+'px';requestAnimationFrame(ac)})();
+document.querySelectorAll('a,.btn,.area,.proj,.chip,.clink,.sk-box,.aside-card,button,.nav-links a').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>cur.classList.remove('hov'));
+});
+
+// Particles
+const cv=document.getElementById('bg'),cx=cv.getContext('2d');
+let pts=[],mp={x:-1e3,y:-1e3};
+function rs(){cv.width=window.innerWidth;cv.height=window.innerHeight}
+rs();window.addEventListener('resize',rs);
+document.addEventListener('mousemove',e=>{mp.x=e.clientX;mp.y=e.clientY});
+class Pt{
+  constructor(){this.r()}
+  r(){this.x=Math.random()*cv.width;this.y=Math.random()*cv.height;this.sz=Math.random()*1+.3;this.vx=(Math.random()-.5)*.2;this.vy=(Math.random()-.5)*.2;this.o=Math.random()*.15+.02;this.c=Math.random()>.9?'#76b900':Math.random()>.8?'#06b6d4':'#27272a'}
+  u(){this.x+=this.vx;this.y+=this.vy;const dx=mp.x-this.x,dy=mp.y-this.y,d=Math.sqrt(dx*dx+dy*dy);if(d<90){this.x-=dx*.006;this.y-=dy*.006;this.o=Math.min(this.o+.01,.35)}if(this.x<0||this.x>cv.width||this.y<0||this.y>cv.height)this.r()}
+  d(){cx.beginPath();cx.arc(this.x,this.y,this.sz,0,Math.PI*2);cx.fillStyle=this.c;cx.globalAlpha=this.o;cx.fill();cx.globalAlpha=1}
+}
+const cnt=Math.min(window.innerWidth*.1,120);
+for(let i=0;i<cnt;i++)pts.push(new Pt);
+function dl(){for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<60){cx.beginPath();cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);cx.strokeStyle='#76b900';cx.globalAlpha=(1-d/60)*.04;cx.lineWidth=.3;cx.stroke();cx.globalAlpha=1}}}
+(function an(){cx.clearRect(0,0,cv.width,cv.height);pts.forEach(p=>{p.u();p.d()});dl();requestAnimationFrame(an)})();
+</script>
+</body>
+</html>
